@@ -23,6 +23,14 @@ detectlanguage.configuration.api_key = DETECT_LANGUAGE_API_KEY
 logger.info("Initializing EasyGoogleTranslate")
 translator = EasyGoogleTranslate()
 
+def safe_translate(text, target_language):
+    try:
+        result = translator.translate(text, target_language=target_language)
+        return result if result is not None else "Translation returned None"
+    except Exception as e:
+        logger.error(f"Translation error: {str(e)}")
+        return f"Translation error: {str(e)}"
+
 @app.route('/health', methods=['GET'])
 def health():
     logger.info("Health check requested")
@@ -33,21 +41,21 @@ def detect_and_translate():
     logger.info("Detect and translate request received")
     try:
         input_text = request.json.get('text')
-        logger.info(f"Input text: {input_text}")
+        logger.info(f"Input text: {input_text or 'None'}")
         if not input_text:
             logger.warning("Missing 'text' in the request")
             return jsonify({"error": "Missing 'text' in the request"}), 400
 
         logger.info("Detecting language")
         detected_lang = detectlanguage.simple_detect(input_text)
-        logger.info(f"Detected language: {detected_lang}")
+        logger.info(f"Detected language: {detected_lang or 'Unknown'}")
 
         logger.info("Translating text to English")
-        translated_text = translator.translate(input_text, target_language='en')
-        logger.info(f"Translated text: {translated_text}")
+        translated_text = safe_translate(input_text, target_language='en')
+        logger.info(f"Translated text: {translated_text or 'None'}")
 
         return jsonify({
-            "detected_language": detected_lang,
+            "detected_language": detected_lang or "Unknown",
             "translated_text": translated_text
         }), 200
 
@@ -61,16 +69,16 @@ def translate():
     try:
         target_lang = request.json.get('target_language')
         english_text = request.json.get('text')
-        logger.info(f"Target language: {target_lang}")
-        logger.info(f"English text: {english_text}")
+        logger.info(f"Target language: {target_lang or 'None'}")
+        logger.info(f"English text: {english_text or 'None'}")
 
         if not target_lang or not english_text:
             logger.warning("Missing 'target_language' or 'text' in the request")
             return jsonify({"error": "Missing 'target_language' or 'text' in the request"}), 400
 
         logger.info("Translating text")
-        translated_text = translator.translate(english_text, target_language=target_lang)
-        logger.info(f"Translated text: {translated_text}")
+        translated_text = safe_translate(english_text, target_language=target_lang)
+        logger.info(f"Translated text: {translated_text or 'None'}")
 
         return jsonify({
             "translated_text": translated_text
