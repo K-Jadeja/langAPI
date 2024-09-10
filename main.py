@@ -24,9 +24,19 @@ logger.info("Initializing EasyGoogleTranslate")
 translator = EasyGoogleTranslate()
 
 def safe_translate(text, target_language):
+    if translator is None:
+        logger.error("Translator is not initialized")
+        return "Translation service unavailable"
     try:
+        logger.info(f"Attempting to translate: '{text}' to {target_language}")
         result = translator.translate(text, target_language=target_language)
-        return result if result is not None else "Translation returned None"
+        logger.info(f"Translation result: {result}")
+        if result is None:
+            return "Translation returned None"
+        return result
+    except AttributeError as e:
+        logger.error(f"AttributeError in translation: {str(e)}")
+        return "Error: Translation service configuration issue"
     except Exception as e:
         logger.error(f"Translation error: {str(e)}")
         return f"Translation error: {str(e)}"
@@ -47,21 +57,31 @@ def detect_and_translate():
             return jsonify({"error": "Missing 'text' in the request"}), 400
 
         logger.info("Detecting language")
-        detected_lang = detectlanguage.simple_detect(input_text)
-        logger.info(f"Detected language: {detected_lang or 'Unknown'}")
+        try:
+            detected_lang = detectlanguage.simple_detect(input_text)
+            logger.info(f"Detected language: {detected_lang or 'Unknown'}")
+        except Exception as e:
+            logger.error(f"Error detecting language: {str(e)}")
+            detected_lang = "Unknown"
 
         logger.info("Translating text to English")
-        translated_text = safe_translate(input_text, target_language='en')
-        logger.info(f"Translated text: {translated_text or 'None'}")
+        try:
+            translated_text = safe_translate(input_text, target_language='en')
+            logger.info(f"Translated text: {translated_text or 'None'}")
+        except Exception as e:
+            logger.error(f"Error translating text: {str(e)}")
+            translated_text = "Translation failed"
 
-        return jsonify({
+        response = {
             "detected_language": detected_lang or "Unknown",
             "translated_text": translated_text
-        }), 200
+        }
+        logger.info(f"Sending response: {response}")
+        return jsonify(response), 200
 
     except Exception as e:
-        logger.error(f"An error occurred: {str(e)}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
+        logger.error(f"An error occurred in detect_and_translate: {str(e)}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 @app.route('/translate', methods=['POST'])
 def translate():
