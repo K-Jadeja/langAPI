@@ -58,5 +58,16 @@ def translate():
         app.logger.error(f"An error occurred: {str(e)}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        "message": "Welcome to the Translation API",
+        "endpoints": {
+            "/health": "Check the health status of the API",
+            "/detect-and-translate": "Detect language and translate to English",
+            "/translate": "Translate from English to a target language"
+        }
+    }), 200
+
 if __name__ == '__main__':
     app.run(debug=True, port=os.getenv("PORT", default=5000))
