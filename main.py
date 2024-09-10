@@ -24,6 +24,7 @@ def health():
 def detect_and_translate():
     try:
         input_text = request.json.get('text')
+        print(input_text)
         if not input_text:
             return jsonify({"error": "Missing 'text' in the request"}), 400
 
@@ -70,4 +71,4 @@ def root():
     }), 200
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True, port=os.getenv("PORT", default=5000))
