@@ -7,7 +7,7 @@ from easygoogletranslate import EasyGoogleTranslate
 import detectlanguage
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "https://oneticket.vercel.app", "https://app.onetickett.vercel.app"])
+CORS(app, origins=["http://localhost:3000", "https://oneticket.vercel.app", "https://onetickett.vercel.app"])
 
 load_dotenv()
 
