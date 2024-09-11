@@ -7,7 +7,7 @@ from easygoogletranslate import EasyGoogleTranslate
 import detectlanguage
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "https://oneticket.vercel.app"])
+CORS(app, origins=["http://localhost:3000", "https://oneticket.vercel.app", "https://app.ontickett.vercel.app"])
 
 load_dotenv()
 
@@ -47,7 +47,7 @@ def health():
     return jsonify({"status": "healthy"}), 200
 
 @app.route('/detect-and-translate', methods=['POST'])
-def detect_and_translate():
+def detect_and_translate():     
     logger.info("Detect and translate request received")
     try:
         input_text = request.json.get('text')
